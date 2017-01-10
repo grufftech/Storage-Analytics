@@ -1,0 +1,15 @@
+version: "2"
+services:
+  elasticsearch:
+    image: "elasticsearch:alpine"
+  redis:
+    image: "redis:alpine"
+  miner:
+    build: "data-miner/."
+    links:
+      - redis
+      - elasticsearch
+    ports:
+      - "5000:5000"
+    volumes:
+      - ".:/code"
