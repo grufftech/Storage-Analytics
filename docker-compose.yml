@@ -1,21 +1,23 @@
 version: "2"
 services:
   elasticsearch:
-    image: "elasticsearch:alpine"
+    build: elasticsearch/
     ports:
       - 9200:9200
-  redis:
-    image: "redis:alpine"
+      - 9300:9300
+
+
   kibana:
-    image: "kibana:latest"
+    build: kibana/
     ports:
       - 5601:5601
     depends_on:
       - elasticsearch
+
+
   miner:
-    build: "."
+    build: miner/
     links:
-      - redis
       - elasticsearch
     ports:
       - "5000:5000"

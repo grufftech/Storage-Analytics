@@ -3,6 +3,7 @@ from pprint import pprint
 from datetime import datetime
 from elasticsearch import Elasticsearch
 from stat import *
+from time import sleep
 
 def walktree(top, callback):
     '''recursively descend the directory tree rooted at top,
@@ -32,8 +33,7 @@ def visitfile(file):
     pathname, filename = os.path.split(file)
     es = Elasticsearch('elasticsearch')
     doc = {
-        'folder': pathbuilder(pathname,[]),
-        'file': filename,
+        'path': file,
         'size': size,
         'timestamp': datetime.now(),
     }
@@ -41,16 +41,13 @@ def visitfile(file):
     print(res['created'])
     print("indexing file:", pathname, filename, size)
 
-def pathbuilder(path,listvalues = []):
-    pathname, foldername = os.path.split(path)
-    if pathname == "/":
-        return listvalues
-    else:
-        listvalues.append(pathname+"/")
-        return pathbuilder(pathname,listvalues)
-
 if __name__ == '__main__':
     es = Elasticsearch('elasticsearch')
-    es.indices.delete(index='file-index', ignore=[400, 404])
-    es.indices.delete(index='folder-index', ignore=[400, 404])
+
+    if sys.argv[2].lower() == "nuke":
+        es.indices.delete(index='file-index', ignore=[400, 404])
+        es.indices.delete(index='.kibana', ignore=[400, 404])
+        print("nuked cache")
+        sys.exit(1)
+
     walktree(sys.argv[1], visitfile)
